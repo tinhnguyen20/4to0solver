@@ -30,7 +30,7 @@ def do_move(pos, action):
 	
 
 def solver(init_pos, primitive, generate_moves, do_move):
-	# solve the game
+	# Set up a cache
 	solved_cache = {}
 
 	def memo_solver(pos, primitive, generate_moves, do_move, solved_cache):
@@ -48,14 +48,24 @@ def solver(init_pos, primitive, generate_moves, do_move):
 				next_states.append(prim)
 
 		r = Primitive.LOSE
-		for s in next_states:
+		win_remoteness = float("inf")
+		loss_remoteness = -float("inf")
+		for s, remoteness in next_states:
 			if s is Primitive.LOSE:
 				r = Primitive.WIN
-		return r
+				win_remoteness = min(win_remoteness, remoteness)
+			else:
+				loss_remoteness = max(loss_remoteness, remoteness)
+
+		if r == Primitive.WIN:
+			if win_remoteness == float("inf"):
+				win_remoteness = -1
+			return r, win_remoteness + 1
+		else:
+			if loss_remoteness == float("inf"):
+				loss_remoteness = -1
+			return r, loss_remoteness + 1
 	return memo_solver(init_pos(), primitive, generate_moves, do_move, solved_cache)
-
-
-
 
 if __name__ == '__main__':
     print(solver(init_pos, primitive, generate_moves, do_move))
